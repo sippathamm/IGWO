@@ -21,7 +21,10 @@ int main() {
     std::vector<double> LowerBound, UpperBound;
 
     int MaximumIteration, NPopulation, NVariable;
-    double Theta = 0.1f, K = 2.0f, VelocityFactor = 0.5f;
+    double Theta = 2.0f, K = 1.5f;
+    double Maximum_a = 2.2f, Minimum_a = 0.02f;
+    double MaximumWeight = 0.9f, MinimumWeight = 0.4f;
+    double VelocityFactor = 0.5f;
 
     Benchmark::BenchmarkCondition(Benchmark::SCHWEFEL_S_2_26,
                                   LowerBound, UpperBound,
@@ -41,6 +44,8 @@ int main() {
         Optimizer::AGWO GWO(LowerBound, UpperBound,
                             MaximumIteration, NPopulation, NVariable,
                             Theta, K,
+                            Maximum_a, Minimum_a,
+                            MaximumWeight, MinimumWeight,
                             VelocityFactor,
                             false);
 
@@ -78,7 +83,7 @@ int main() {
 
     double Mean = GetMean(Sample);
     double Variance = GetVariance(Sample);
-    double SD = sqrtf(Variance);
+    double SD = sqrt(Variance);
 
     std::cout << "Maximum:\t" << Maximum << std::endl;
     std::cout << "Minimum:\t" << Minimum << std::endl;
@@ -107,7 +112,7 @@ double GetVariance (const std::vector<double> &Sample)
 
     for (const auto &i : Sample)
     {
-        Variance += powf(i - Mean, 2);
+        Variance += pow(i - Mean, 2);
     }
 
     return Variance / ((double)Sample.size() - 1);
