@@ -81,6 +81,12 @@ int main() {
 
     std::cout << "Benchmark Result" << std::endl;
 
+    for (const auto &i : Sample)
+    {
+        std::cout << i << "\t";
+    }
+    std::cout << std::endl;
+
     double Mean = GetMean(Sample);
     double Variance = GetVariance(Sample);
     double SD = sqrt(Variance);
