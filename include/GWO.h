@@ -136,13 +136,8 @@ namespace Optimizer
                 // Update Alpha, Beta, and Delta wolf
                 UpdateGlobalBestPosition();
 
-                this->a_Alpha_ = this->Maximum_a_ *
-                                 exp(pow(static_cast<double>(Iteration) / this->MaximumIteration_, this->AlphaGrowthFactor_) *
-                                 log(this->Minimum_a_ / this->Maximum_a_));
-                this->a_Delta_ = this->Maximum_a_ *
-                                 exp(pow(static_cast<double>(Iteration) / this->MaximumIteration_, this->DeltaGrowthFactor_) *
-                                 log(this->Minimum_a_ / this->Maximum_a_));
-                this->a_Beta_ = (this->a_Alpha_ + this->a_Delta_) * 0.5f;
+                // Calculate a_Alpha, a_Beta, a_Delta
+                Calculate_a(Iteration);
 
                 for (int PopulationIndex = 0; PopulationIndex < this->NPopulation_; PopulationIndex++)
                 {
@@ -193,6 +188,17 @@ namespace Optimizer
             }
         }
 
+        void Calculate_a (int Iteration)
+        {
+            this->a_Alpha_ = this->Maximum_a_ *
+                             exp(pow(static_cast<double>(Iteration) / this->MaximumIteration_, this->AlphaGrowthFactor_) *
+                             log(this->Minimum_a_ / this->Maximum_a_));
+            this->a_Delta_ = this->Maximum_a_ *
+                             exp(pow(static_cast<double>(Iteration) / this->MaximumIteration_, this->DeltaGrowthFactor_) *
+                             log(this->Minimum_a_ / this->Maximum_a_));
+            this->a_Beta_ = (this->a_Alpha_ + this->a_Delta_) * 0.5f;
+        }
+
         void Optimize (AWolf *CurrentPopulation)
         {
             this->H_ = this->K_ * ((0.0f - CurrentPopulation->FitnessValue) / this->AverageFitnessValue_);
@@ -200,7 +206,9 @@ namespace Optimizer
             this->Weight_ = ((this->MaximumWeight_ + this->MinimumWeight_) * 0.5f) +
                             (this->MaximumWeight_ - this->MinimumWeight_) * (this->H_ / (std::hypot(1.0f, this->H_))) * tan(this->Theta_);
 
-            std::vector<double> UpdatedPosition(this->NVariable_);
+            double Radius = 0.0f;
+            std::vector<double> Neighbor(this->NPopulation_);
+            std::vector<double> PositionGWO(this->NVariable_);
 
             for (int VariableIndex = 0; VariableIndex < this->NVariable_; VariableIndex++)
             {
@@ -213,11 +221,11 @@ namespace Optimizer
                 double C3 = 2.0f * GenerateRandom(0.0f, 1.0f);
 
                 double X1 = GlobalBestPosition_.Alpha.Position[VariableIndex] - A1 *
-                                                                                abs(C1 * GlobalBestPosition_.Alpha.Position[VariableIndex] - CurrentPopulation->Position[VariableIndex]);
+                            abs(C1 * GlobalBestPosition_.Alpha.Position[VariableIndex] - CurrentPopulation->Position[VariableIndex]);
                 double X2 = GlobalBestPosition_.Beta.Position[VariableIndex] - A2 *
-                                                                               abs(C2 * GlobalBestPosition_.Beta.Position[VariableIndex] - CurrentPopulation->Position[VariableIndex]);
+                            abs(C2 * GlobalBestPosition_.Beta.Position[VariableIndex] - CurrentPopulation->Position[VariableIndex]);
                 double X3 = GlobalBestPosition_.Delta.Position[VariableIndex] - A3 *
-                                                                                abs(C3 * GlobalBestPosition_.Delta.Position[VariableIndex] - CurrentPopulation->Position[VariableIndex]);
+                            abs(C3 * GlobalBestPosition_.Delta.Position[VariableIndex] - CurrentPopulation->Position[VariableIndex]);
 
                 double X = (X1 + X2 + X3) / 3.0f;
 
@@ -242,30 +250,86 @@ namespace Optimizer
 
                 NewPosition = CLAMP(NewPosition, this->LowerBound_[VariableIndex], this->UpperBound_[VariableIndex]);
 
-                UpdatedPosition[VariableIndex] = NewPosition;
+                // R = (X_i - X_new)^2
+                Radius += std::hypot(CurrentPopulation->Position[VariableIndex] - NewPosition,
+                                     CurrentPopulation->Position[VariableIndex] - NewPosition);
+
+                PositionGWO[VariableIndex] = NewPosition;
             }
 
-            double FitnessValue = FitnessFunction_(UpdatedPosition);
-            this->NextAverageFitnessValue_ += FitnessValue;
+            // Stored index which neighbor distance <= radius
+            std::vector<int> Index;
 
-            if (FitnessValue < CurrentPopulation->FitnessValue)
+            for (int PopulationIndex_ = 0; PopulationIndex_ < this->NPopulation_; PopulationIndex_++)
             {
-                CurrentPopulation->Position = UpdatedPosition;
-                CurrentPopulation->FitnessValue = FitnessValue;
+                auto *AnotherPopulation = &this->Population_[PopulationIndex_];
+
+                double Distance = 0.0;
+
+                for (int VariableIndex = 0; VariableIndex < this->NVariable_; VariableIndex++)
+                {
+                    // D = (X_i - X_j)^2
+                    Distance += std::hypot(CurrentPopulation->Position[VariableIndex] - AnotherPopulation->Position[VariableIndex],
+                                           CurrentPopulation->Position[VariableIndex] - AnotherPopulation->Position[VariableIndex]);
+                }
+
+                Neighbor[PopulationIndex_] = Distance;
+
+                if (Neighbor[PopulationIndex_] <= Radius)
+                {
+                    Index.push_back(PopulationIndex_);
+                }
             }
-        }
 
-        std::vector<double> GetGlobalBestPosition () const
-        {
-            return this->GlobalBestPosition_.Alpha.Position;
-        }
+            std::vector<double> PositionDLH(this->NVariable_);
 
-        double GetGlobalBestFitnessValue () const
-        {
-            return this->GlobalBestPosition_.Alpha.FitnessValue;
-        }
+            std::random_device Engine;
 
-    private:
+            for (int VariableIndex = 0; VariableIndex < this->NVariable_; VariableIndex++)
+            {
+                int RandomIndexNeighbor = std::uniform_int_distribution<int>(0, (int)Index.size() - 1)(Engine);
+                int RandomIndexPopulation = std::uniform_int_distribution<int>(0, this->NPopulation_ - 1)(Engine);
+
+                double DLH = CurrentPopulation->Position[VariableIndex] +
+                             GenerateRandom(0.0f, 1.0f) *
+                             (this->Population_[Index[RandomIndexNeighbor]].Position[VariableIndex] -
+                             this->Population_[RandomIndexPopulation].Position[VariableIndex]);
+
+                DLH = CLAMP(DLH, this->LowerBound_[VariableIndex], this->UpperBound_[VariableIndex]);
+
+                PositionDLH[VariableIndex] = DLH;
+            }
+
+            double FitnessValueGWO = FitnessFunction_(PositionGWO);
+            double FitnessValueDLH = FitnessFunction_(PositionDLH);
+
+            if (FitnessValueGWO < FitnessValueDLH)
+            {
+                CurrentPopulation->Position = PositionGWO;
+                CurrentPopulation->FitnessValue = FitnessValueGWO;
+
+                this->NextAverageFitnessValue_ += FitnessValueGWO;
+            }
+            else
+            {
+                CurrentPopulation->Position = PositionDLH;
+                CurrentPopulation->FitnessValue = FitnessValueDLH;
+
+                this->NextAverageFitnessValue_ += FitnessValueDLH;
+            }
+    }
+
+    std::vector<double> GetGlobalBestPosition () const
+    {
+        return this->GlobalBestPosition_.Alpha.Position;
+    }
+
+    double GetGlobalBestFitnessValue () const
+    {
+        return this->GlobalBestPosition_.Alpha.FitnessValue;
+    }
+
+private:
         std::vector<double> LowerBound_, UpperBound_;
         int MaximumIteration_, NPopulation_, NVariable_;
         double Theta_, K_;
