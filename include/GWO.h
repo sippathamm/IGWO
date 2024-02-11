@@ -4,6 +4,7 @@
 
 /* TODO:    - Add comments and documentation
  *          - Add more velocity confinements
+ *          - Use vector push_back()
  */
 
 #ifndef GWO_H
@@ -28,6 +29,13 @@ namespace Optimizer
         std::random_device Engine;
         std::uniform_real_distribution<double> RandomDistribution(0.0f, 1.0f);
         return LowerBound + RandomDistribution(Engine) * (UpperBound - LowerBound);
+    }
+    
+    int GenerateRandomIndex (int Index)
+    {
+        std::random_device Engine;
+        std::uniform_int_distribution RandomDistribution(0, Index - 1);
+        return RandomDistribution(Engine);
     }
 
     typedef struct AWolf
@@ -208,7 +216,7 @@ namespace Optimizer
 
             double Radius = 0.0f;
             std::vector<double> Neighbor(this->NPopulation_);
-            std::vector<double> PositionGWO(this->NVariable_);
+            std::vector<double> GWOPosition(this->NVariable_);
 
             for (int VariableIndex = 0; VariableIndex < this->NVariable_; VariableIndex++)
             {
@@ -254,15 +262,15 @@ namespace Optimizer
                 Radius += std::hypot(CurrentPopulation->Position[VariableIndex] - NewPosition,
                                      CurrentPopulation->Position[VariableIndex] - NewPosition);
 
-                PositionGWO[VariableIndex] = NewPosition;
+                GWOPosition[VariableIndex] = NewPosition;
             }
 
             // Stored index which neighbor distance <= radius
             std::vector<int> Index;
 
-            for (int PopulationIndex_ = 0; PopulationIndex_ < this->NPopulation_; PopulationIndex_++)
+            for (int PopulationIndex = 0; PopulationIndex < this->NPopulation_; PopulationIndex++)
             {
-                auto *AnotherPopulation = &this->Population_[PopulationIndex_];
+                auto *AnotherPopulation = &this->Population_[PopulationIndex];
 
                 double Distance = 0.0;
 
@@ -273,22 +281,20 @@ namespace Optimizer
                                            CurrentPopulation->Position[VariableIndex] - AnotherPopulation->Position[VariableIndex]);
                 }
 
-                Neighbor[PopulationIndex_] = Distance;
+                Neighbor[PopulationIndex] = Distance;
 
-                if (Neighbor[PopulationIndex_] <= Radius)
+                if (Neighbor[PopulationIndex] <= Radius)
                 {
-                    Index.push_back(PopulationIndex_);
+                    Index.push_back(PopulationIndex);
                 }
             }
 
-            std::vector<double> PositionDLH(this->NVariable_);
-
-            std::random_device Engine;
+            std::vector<double> DLHPosition(this->NVariable_);
 
             for (int VariableIndex = 0; VariableIndex < this->NVariable_; VariableIndex++)
             {
-                int RandomIndexNeighbor = std::uniform_int_distribution<int>(0, (int)Index.size() - 1)(Engine);
-                int RandomIndexPopulation = std::uniform_int_distribution<int>(0, this->NPopulation_ - 1)(Engine);
+                int RandomIndexNeighbor = GenerateRandomIndex(Index.size());
+                int RandomIndexPopulation = GenerateRandomIndex(this->NPopulation_);
 
                 double DLH = CurrentPopulation->Position[VariableIndex] +
                              GenerateRandom(0.0f, 1.0f) *
@@ -297,22 +303,22 @@ namespace Optimizer
 
                 DLH = CLAMP(DLH, this->LowerBound_[VariableIndex], this->UpperBound_[VariableIndex]);
 
-                PositionDLH[VariableIndex] = DLH;
+                DLHPosition[VariableIndex] = DLH;
             }
 
-            double FitnessValueGWO = FitnessFunction_(PositionGWO);
-            double FitnessValueDLH = FitnessFunction_(PositionDLH);
+            double FitnessValueGWO = FitnessFunction_(GWOPosition);
+            double FitnessValueDLH = FitnessFunction_(DLHPosition);
 
             if (FitnessValueGWO < FitnessValueDLH)
             {
-                CurrentPopulation->Position = PositionGWO;
+                CurrentPopulation->Position = GWOPosition;
                 CurrentPopulation->FitnessValue = FitnessValueGWO;
 
                 this->NextAverageFitnessValue_ += FitnessValueGWO;
             }
             else
             {
-                CurrentPopulation->Position = PositionDLH;
+                CurrentPopulation->Position = DLHPosition;
                 CurrentPopulation->FitnessValue = FitnessValueDLH;
 
                 this->NextAverageFitnessValue_ += FitnessValueDLH;
