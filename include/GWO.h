@@ -354,7 +354,7 @@ namespace Optimizer
 
         std::vector<double> CalculateDLHPosition (AWolf *CurrentPopulation, const std::vector<int> &Index)
         {
-            std::vector<double> DLHPosition(this->NPopulation_);
+            std::vector<double> DLHPosition(this->NVariable_);
 
             for (int VariableIndex = 0; VariableIndex < this->NVariable_; VariableIndex++)
             {
@@ -364,7 +364,7 @@ namespace Optimizer
                 double DLH = CurrentPopulation->Position[VariableIndex] +
                              GenerateRandom(0.0f, 1.0f) *
                              (this->Population_[Index[NeighborIndex]].Position[VariableIndex] -
-                              this->Population_[PopulationIndex].Position[VariableIndex]);
+                             this->Population_[PopulationIndex].Position[VariableIndex]);
 
                 DLH = CLAMP(DLH, this->LowerBound_[VariableIndex], this->UpperBound_[VariableIndex]);
 
