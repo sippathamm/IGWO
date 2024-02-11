@@ -10,7 +10,7 @@
 double GetMean (const std::vector<double> &Sample);
 double GetVariance (const std::vector<double> &Sample);
 
-double FitnessFunction (const std::vector<double> &Position)
+double ObjectiveFunction (const std::vector<double> &Position)
 {
     // Define your fitness function here
 
@@ -49,7 +49,7 @@ int main() {
                             VelocityFactor,
                             false);
 
-        GWO.SetFitnessFunction(FitnessFunction);
+        GWO.SetObjectiveFunction(ObjectiveFunction);
 
         if (GWO.Run())
         {
@@ -62,7 +62,7 @@ int main() {
             }
             std::cout << std::endl;
 
-            double GlobalBestFitnessValue = GWO.GetGlobalBestFitnessValue();
+            double GlobalBestFitnessValue = GWO.GetGlobalBestCost();
 
             std::cout << "Global Best Fitness Value:\t" << GlobalBestFitnessValue << std::endl;
 
