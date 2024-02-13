@@ -39,7 +39,7 @@ namespace Optimizer
 
     typedef struct AWolf
     {
-        AWolf () : Cost(INFINITY) {}
+        AWolf () : Cost(0.0f) {}
 
         std::vector<double> Position;
         double Cost;
