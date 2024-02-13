@@ -2,15 +2,14 @@
 // Created by Sippawit Thammawiset on 29/1/2024 AD.
 //
 
-/* TODO:    Add documentation
- */
-
 #ifndef BENCHMARK_FUNCTION_H
 #define BENCHMARK_FUNCTION_H
 
+#include <random>
+
 namespace Benchmark
 {
-    typedef int FUNCTION_TYPE;
+    typedef int FUNCTION_NAME;
 
     enum
     {
@@ -25,6 +24,13 @@ namespace Benchmark
         ACKLEY = 8,
         GRIEWANK = 9
     };
+
+    double GenerateRandom (double LowerBound = 0.0f, double UpperBound = 1.0f)
+    {
+        std::random_device Engine;
+        std::uniform_real_distribution<double> RandomDistribution(0.0f, 1.0f);
+        return LowerBound + RandomDistribution(Engine) * (UpperBound - LowerBound);
+    }
 
     namespace Function
     {
@@ -109,7 +115,7 @@ namespace Benchmark
                 Sum += i * Position[i] * Position[i] * Position[i] * Position[i];
             }
 
-            return Sum + Optimizer::GenerateRandom(0.0f, 1.0f);
+            return Sum + GenerateRandom(0.0f, 1.0f);
         }
 
         double Schwefel_s_2_26 (const std::vector<double> &Position)
@@ -291,7 +297,7 @@ namespace Benchmark
         }
     } // Benchmark::Condition
 
-    double BenchmarkFunction (FUNCTION_TYPE FUNCTION, const std::vector<double> &Position)
+    double BenchmarkFunction (FUNCTION_NAME FUNCTION, const std::vector<double> &Position)
     {
         switch (FUNCTION)
         {
@@ -323,7 +329,7 @@ namespace Benchmark
         return -1;
     }
 
-    void BenchmarkCondition(FUNCTION_TYPE FUNCTION,
+    void BenchmarkCondition(FUNCTION_NAME FUNCTION,
                             std::vector<double> &LowerBound, std::vector<double> &UpperBound,
                             int &MaximumIteration, int &NPopulation, int &NVariable)
     {

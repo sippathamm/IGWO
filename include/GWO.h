@@ -4,7 +4,6 @@
 
 /* TODO:    - Add comments and documentation
  *          - Add more velocity confinements
- *          - Use vector push_back()
  */
 
 #ifndef GWO_H
@@ -56,7 +55,7 @@ namespace Optimizer
     class AGWO
     {
     public:
-        AGWO (const std::vector<double>& LowerBound, const std::vector<double>& UpperBound,
+        AGWO (const std::vector<double> &LowerBound, const std::vector<double> &UpperBound,
               int MaximumIteration, int NPopulation, int NVariable,
               double Theta, double K,
               double Maximum_a = 2.2f, double Minimum_a = 0.02f,
@@ -91,7 +90,7 @@ namespace Optimizer
         {
             if (this->ObjectiveFunction_ == nullptr)
             {
-                std::cerr << "Fitness function is not defined. Please use SetObjectiveFunction(UserObjectiveFunction) before calling Run()." << std::endl;
+                std::cerr << "Objective function is not defined. Please use SetObjectiveFunction(UserObjectiveFunction) before calling Run()." << std::endl;
 
                 return FAILED;
             }
@@ -151,7 +150,7 @@ namespace Optimizer
 
                 if (this->Log_)
                 {
-                    std::cout << "[INFO] Iteration: " << Iteration << " >>> " << "Best fitness value: "
+                    std::cout << "[INFO] Iteration: " << Iteration << " >>> " << "Best Cost: "
                               << this->GlobalBestPosition_.Alpha.Cost << std::endl;
                 }
 
@@ -197,7 +196,6 @@ namespace Optimizer
 
         bool Log_;
 
-
         void UpdateGlobalBestPosition ()
         {
             for (int PopulationIndex = 0; PopulationIndex < this->NPopulation_; PopulationIndex++)
@@ -239,7 +237,7 @@ namespace Optimizer
         void CalculateWeight (AWolf *CurrentPopulation)
         {
             this->H_ = this->K_ * ((0.0f - CurrentPopulation->Cost) / this->AverageCost_);
-            //                      ^ Optimal Value
+            //                      ^ Optimal cost
             this->Weight_ = ((this->MaximumWeight_ + this->MinimumWeight_) * 0.5f) +
                             (this->MaximumWeight_ - this->MinimumWeight_) * (this->H_ / (std::hypot(1.0f, this->H_))) * tan(this->Theta_);
         }
@@ -297,7 +295,7 @@ namespace Optimizer
 
                     // R = (X_i - X_new)^2
                     Radius += std::hypot(CurrentPopulation->Position[VariableIndex] - NewPosition,
-                                         CurrentPopulation->Position[VariableIndex] - NewPosition);
+                                         0.0f);
 
                     GWOPosition[VariableIndex] = NewPosition;
                 }
@@ -340,7 +338,7 @@ namespace Optimizer
                 {
                     // D = (X_i - X_j)^2
                     Distance += std::hypot(CurrentPopulation->Position[VariableIndex] - AnotherPopulation->Position[VariableIndex],
-                                           CurrentPopulation->Position[VariableIndex] - AnotherPopulation->Position[VariableIndex]);
+                                           0.0f);
                 }
 
                 if (Distance <= Radius)

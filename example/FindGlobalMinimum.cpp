@@ -12,7 +12,7 @@ double GetVariance (const std::vector<double> &Sample);
 
 double ObjectiveFunction (const std::vector<double> &Position)
 {
-    // Define your fitness function here
+    // Define your objective function here
 
     return Benchmark::BenchmarkFunction(Benchmark::SCHWEFEL_S_2_26, Position);
 }
@@ -62,14 +62,14 @@ int main() {
             }
             std::cout << std::endl;
 
-            double GlobalBestFitnessValue = GWO.GetGlobalBestCost();
+            double GlobalBestCost = GWO.GetGlobalBestCost();
 
-            std::cout << "Global Best Fitness Value:\t" << GlobalBestFitnessValue << std::endl;
+            std::cout << "Global Best Fitness Value:\t" << GlobalBestCost << std::endl;
 
-            Maximum = std::max(Maximum, GlobalBestFitnessValue);
-            Minimum = std::min(Minimum, GlobalBestFitnessValue);
+            Maximum = std::max(Maximum, GlobalBestCost);
+            Minimum = std::min(Minimum, GlobalBestCost);
 
-            Sample.push_back(GlobalBestFitnessValue);
+            Sample.push_back(GlobalBestCost);
         }
         else
         {
