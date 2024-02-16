@@ -3,7 +3,6 @@
 //
 
 /* TODO:    - Add comments and documentation
- *          - Add more velocity confinements
  */
 
 #ifndef GWO_H
@@ -323,7 +322,7 @@ namespace Optimizer
                 }
             }
         }
-        
+
         std::vector<int> GetNeighborHoodIndex (AWolf *CurrentPopulation, double &Radius)
         {
             std::vector<int> Index;

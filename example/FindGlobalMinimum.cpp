@@ -64,7 +64,7 @@ int main() {
 
             double GlobalBestCost = GWO.GetGlobalBestCost();
 
-            std::cout << "Global Best Fitness Value:\t" << GlobalBestCost << std::endl;
+            std::cout << "Global Best Cost:\t" << GlobalBestCost << std::endl;
 
             Maximum = std::max(Maximum, GlobalBestCost);
             Minimum = std::min(Minimum, GlobalBestCost);
