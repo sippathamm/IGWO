@@ -39,14 +39,17 @@ double ObjectiveFunction (const std::vector<double> &Position)
 
 int main()
 {
-    std::vector<double> LowerBound, UpperBound;
-    int MaximumIteration, NPopulation, NVariable;
+    // Initialize parameters
+    int MaximumIteration = 1000;
+    int NPopulation = 50;
     double MaximumWeight = 2.2, MinimumWeight = 0.02;
 
+    int NVariable;
+    std::vector<double> LowerBound, UpperBound;
+
     // Get benchmark properties
-    Benchmark::BenchmarkCondition(BENCHMARK_NAME,
-                                  LowerBound, UpperBound,
-                                  MaximumIteration, NPopulation, NVariable);
+    Benchmark::BenchmarkProperty(BENCHMARK_NAME,
+                                 NVariable, LowerBound, UpperBound);
 
     int NRun = 30; // Number of runs for benchmarking
 
