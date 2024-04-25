@@ -13,37 +13,6 @@ Through the integration of novel mechanisms, IGWO aims to achieve superior perfo
 - Customizable parameters for fine-tuning the optimization process.
 - Example code demonstrating the usage of the IGWO algorithm for solving optimization problems.
 
-## Getting Started
-
-Follow these steps to get started with the IGWO algorithm:
-
-1. **Clone the Repository**: Clone this repository to your local machine using the following command:
-
-    ```bash
-    git clone https://github.com/sippathamm/IGWO.git
-    ```
-
-2. **Build the Project**: Navigate to the root directory and create a build directory. Then, run CMake to configure the project and generate build files:
-
-    ```bash
-    cd IGWO
-    mkdir build
-    cmake -S . -B build
-    ```
-
-3. **Compile the Code**: Once the build files are generated, build the IGWO executable by running:
-
-    ```bash
-    cmake --build build --target IGWO
-    ```
-
-4. **Run the Executable**: Execute the IGWO algorithm by navigating to the build directory and running the generated executable:
-
-    ```bash
-    cd build
-    ./IGWO
-    ```
-   
 ## Usage
 
 Replace the `ObjectiveFunction` implementation with your own objective function logic. This function should take a `std::vector<double>` representing the position of the particle in the search space and return the value of the objective function at that position.
