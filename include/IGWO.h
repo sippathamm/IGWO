@@ -369,11 +369,13 @@ namespace MTH::IGWO
                     NewPosition = CLAMP(NewPosition, this->LowerBound_[VariableIndex], this->UpperBound_[VariableIndex]);
 
                     // Equation (10)
-                    Radius += std::hypot(CurrentPopulation->Position[VariableIndex] - NewPosition, 0.0);
+                    Radius += std::pow(CurrentPopulation->Position[VariableIndex] - NewPosition, 2);
 
                     // Store GWO position
                     GWOPosition[VariableIndex] = NewPosition;
                 }
+
+                Radius = sqrt(Radius);
 
                 // Get the index of neighborhood and calculate the DLH position
                 std::vector<int> Index = GetNeighborHoodIndex(CurrentPopulation, Radius);
@@ -409,7 +411,7 @@ namespace MTH::IGWO
          *
          * @return A vector containing the indices of wolves within the neighborhood.
          */
-        std::vector<int> GetNeighborHoodIndex (AWolf<T> *CurrentPopulation, double &Radius)
+        std::vector<int> GetNeighborHoodIndex (AWolf<T> *CurrentPopulation, double Radius)
         {
             std::vector<int> Index;
 
@@ -423,9 +425,10 @@ namespace MTH::IGWO
                 // Calculate the distance between the current wolf and neighbor wolf in the population
                 for (int VariableIndex = 0; VariableIndex < this->NVariable_; VariableIndex++)
                 {
-                    Distance += std::hypot(CurrentPopulation->Position[VariableIndex] - NeighborPopulation->Position[VariableIndex],
-                                           0.0f);
+                    Distance += std::pow(CurrentPopulation->Position[VariableIndex] - NeighborPopulation->Position[VariableIndex], 2);
                 }
+
+                Distance = sqrt(Distance);
 
                 // Equation (11)
                 if (Distance <= Radius)
@@ -462,7 +465,7 @@ namespace MTH::IGWO
 
                 // Equation (12)
                 double DLH = CurrentPopulation->Position[VariableIndex] +
-                             GenerateRandom(0.0f, 1.0f) *
+                             GenerateRandom(0.0, 1.0) *
                              (this->Population_[Index[NeighborIndex]].Position[VariableIndex] -
                               this->Population_[PopulationIndex].Position[VariableIndex]);
 
